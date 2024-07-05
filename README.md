@@ -1,6 +1,6 @@
 # backend-ailang
 ```sh
 go mod tidy
-cd run
+cd primary
 go run main.go
 ```
