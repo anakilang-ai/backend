@@ -7,7 +7,7 @@ import (
 // Daftar origins yang diizinkan
 var Origins = []string{
 	"http://localhost:8080",
-	"https://https://anakilang-ai.github.io/",
+	"https://anakilang-ai.github.io/",
 }
 
 // Fungsi untuk memeriksa apakah origin diizinkan
