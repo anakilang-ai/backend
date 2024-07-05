@@ -33,7 +33,7 @@ func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func GetUserFromEmail(email string, db *mongo.Database) (doc model.User, err error) {
+func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"email": email}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
@@ -61,7 +61,7 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 	return
 }
 
-func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc model.User, err error) {
+func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"_id": _id}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)

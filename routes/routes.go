@@ -1,4 +1,4 @@
-package utils
+package routes
 
 import (
 	"net/http"
@@ -9,12 +9,12 @@ import (
 )
 
 func URL(w http.ResponseWriter, r *http.Request) {
-	if config.SetAccessControlHeaders(w, r) {
+	if modules.SetAccessControlHeaders(w, r) {
 		return // If it's a preflight request, return early.
 	}
 
-	if config.ErrorMongoconn != nil {
-		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, " + config.ErrorMongoconn.Error())
+	if modules.ErrorMongoconn != nil {
+		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, " + modules.ErrorMongoconn.Error())
 		return
 	}
 
@@ -23,11 +23,11 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	case method == "GET" && path == "/":
 		Home(w, r)
 	case method == "POST" && path == "/signup":
-		controller.SignUp(config.Mongoconn, "users", w, r)
+		controller.SignUp(modules.Mongoconn, "users", w, r)
 	case method == "POST" && path == "/login":
-		controller.LogIn(config.Mongoconn, w, r, config.GetEnv("PASETOPRIVATEKEY"))
+		controller.LogIn(modules.Mongoconn, w, r, modules.GetEnv("PASETOPRIVATEKEY"))
 	case method == "POST" && path == "/chat":
-		controller.Chat(w, r, config.GetEnv("TOKENMODEL"))
+		controller.Chat(w, r, modules.GetEnv("TOKENMODEL"))
 	default:
 		helper.ErrorResponse(w, r, http.StatusNotFound, "Not Found", "The requested resource was not found")
 	}

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/badoux/checkmail"
-	"github.com/anakilang-ai/backend/helper"
+	"github.com/anakilang-ai/backend/utils"
 	model "github.com/anakilang-ai/backend/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,35 +20,35 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 
 	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
 
 	if user.NamaLengkap == "" || user.Email == "" || user.Password == "" || user.Confirmpassword == "" {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
 	if err := checkmail.ValidateFormat(user.Email); err != nil {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-	userExists, _ := helper.GetUserFromEmail(user.Email, db)
+	userExists, _ := utils.GetUserFromEmail(user.Email, db)
 	if user.Email == userExists.Email {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
 		return
 	}
 	if strings.Contains(user.Password, " ") {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
 		return
 	}
 	if len(user.Password) < 8 {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
 		return
 	}
 	salt := make([]byte, 16)
 	_, err = rand.Read(salt)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
 		return
 	}
 	hashedPassword := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
@@ -58,9 +58,9 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 		"password":    hex.EncodeToString(hashedPassword),
 		"salt":        hex.EncodeToString(salt),
 	}
-	insertedID, err := helper.InsertOneDoc(db, col, userData)
+	insertedID, err := utils.InsertOneDoc(db, col, userData)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
 		return
 	}
 	resp := map[string]any{
@@ -70,5 +70,5 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 			"email": user.Email,
 		},
 	}
-	helper.WriteJSON(respw, http.StatusCreated, resp)
+	utils.WriteJSON(respw, http.StatusCreated, resp)
 }

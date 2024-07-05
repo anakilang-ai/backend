@@ -13,7 +13,7 @@ import (
 )
 
 func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
-	var chat model.AIRequest
+	var chat models.AIRequest
 
 	err := json.NewDecoder(req.Body).Decode(&chat)
 	if err != nil {
@@ -29,7 +29,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	client := resty.New()
 
 	// Hugging Face API URL dan token
-	apiUrl := config.GetEnv("HUGGINGFACE_API_KEY")
+	apiUrl := modules.GetEnv("HUGGINGFACE_API_KEY")
 	apiToken := "Bearer " + tokenmodel
 
 	var response *resty.Response
