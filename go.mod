@@ -1,4 +1,4 @@
-module backend-ailang
+module github.com/anakilang-ai/backend
 
 go 1.22.5
 
