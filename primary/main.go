@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/anakilang-ai/backend-ailang/routes"
+	"github.com/anakilang-ai/backend/routes"
 )
 
 func main() {
