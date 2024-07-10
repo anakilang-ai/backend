@@ -1,5 +1,6 @@
 package utils
 
+//mengimpor beberapa library yang dibutuhkan untuk menjalankan fungsi-fungsi yang ada di file tersebut.
 import (
 	"encoding/json"
 	"fmt"
@@ -39,7 +40,7 @@ func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	token, err = parser.ParseV4Public(pubKey, tokenstring, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
 	if err != nil {
 		return payload, fmt.Errorf("Decode ParseV4Public : %v", err)
-	} 
+	}
 	err = json.Unmarshal(token.ClaimsJSON(), &payload)
 	return payload, err
 }
