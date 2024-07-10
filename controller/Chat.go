@@ -1,15 +1,16 @@
 package controller
 
+//mengimpor beberapa package yang dibutuhkan untuk program Go, termasuk package dari repository GitHub eksternal.
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/go-resty/resty/v2"
-	"github.com/anakilang-ai/backend/modules"
 	"github.com/anakilang-ai/backend/helper"
 	"github.com/anakilang-ai/backend/models"
+	"github.com/anakilang-ai/backend/modules"
+	"github.com/go-resty/resty/v2"
 )
 
 func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
