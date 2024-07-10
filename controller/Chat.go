@@ -109,6 +109,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 		// Kirim response sukses dengan generated text
 		helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
 	} else {
+		// Jika tidak ada data response, kembalikan Internal Server Error
 		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: response")
 	}
 }
