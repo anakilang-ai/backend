@@ -31,7 +31,6 @@ func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
 	return token.V4Sign(secretKey, nil), err
 }
 
-// memverifikasi dan mengekstrak informasi pengguna (ID dan email) dari token JWT yang diberikan, menggunakan kunci publik, serta mengembalikan informasi tersebut dalam bentuk struct Payload jika token valid, dan memberikan pesan kesalahan jika proses verifikasi atau ekstraksi gagal.
 func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	var token *paseto.Token
 	var pubKey paseto.V4AsymmetricPublicKey
