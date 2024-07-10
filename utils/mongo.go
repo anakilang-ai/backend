@@ -19,6 +19,7 @@ type DBInfo struct {
 	DBName   string
 }
 
+// Fungsi MongoConnect digunakan untuk menghubungkan ke database MongoDB dan mengembalikan objek database.
 func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mconn.DBString))
 	if err != nil {
