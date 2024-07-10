@@ -32,6 +32,7 @@ type AIRequest struct {
 	CreatedAt time.Time          `bson:"created_at,omitempty" json:"created_at,omitempty"`
 }
 
+// merepresentasikan respon yang diberikan oleh AI terhadap request yang diajukan.
 type AIResponse struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	AIRequest AIRequest          `bson:"airequest,omitempty" json:"airequest,omitempty"`
