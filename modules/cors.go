@@ -1,11 +1,10 @@
 package modules
 
-//mengimpor package net/http dari standard library Go.  Package net/http menyediakan berbagai fungsi untuk membangun dan menjalankan server HTTP, menangani request dan response HTTP, dan melakukan crawling web.
 import (
 	"net/http"
 )
 
-// Mendaftar origins yang diizinkan
+// Daftar origins yang diizinkan
 var Origins = []string{
 	"http://localhost:8080",
 	"https://anakilang-ai.github.io/",
