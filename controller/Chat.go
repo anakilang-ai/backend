@@ -87,6 +87,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 		return
 	}
 
+	// Decode response body ke dalam slice map
 	var data []map[string]interface{}
 
 	err = json.Unmarshal(response.Body(), &data)
