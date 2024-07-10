@@ -52,34 +52,23 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err er
 }
 
 func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, err error) {
-	// Fungsi GetAllDocs digunakan untuk mengambil semua dokumen dari collection database yang memenuhi filter tertentu.
-
-	// Kontext background untuk operasi database
 	ctx := context.TODO()
-	// Ambil collection dari database
 	collection := db.Collection(col)
-	// Find dokumen yang sesuai dengan filter
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return
 	}
-	// Tutup cursor setelah selesai digunakan (defer)
 	defer cursor.Close(ctx)
-	// Decode semua dokumen ke dalam slice dengan tipe data generik T
 	err = cursor.All(context.TODO(), &docs)
 	if err != nil {
 		return
 	}
-	// Kembalikan slice berisi dokumen dan error (jika ada)
 	return
 }
 
 func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User, err error) {
-	// Fungsi GetUserFromID digunakan untuk mengambil data user berdasarkan ID (_id) dari database.
 	collection := db.Collection("users")
-	// Filter untuk mencari dokumen dengan _id tertentu
 	filter := bson.M{"_id": _id}
-	// Find one document yang sesuai dengan filter
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
