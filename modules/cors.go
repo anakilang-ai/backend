@@ -1,5 +1,6 @@
 package modules
 
+//mengimpor package net/http dari standard library Go.  Package net/http menyediakan berbagai fungsi untuk membangun dan menjalankan server HTTP, menangani request dan response HTTP, dan melakukan crawling web.
 import (
 	"net/http"
 )
