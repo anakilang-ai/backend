@@ -52,6 +52,9 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err er
 }
 
 func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, err error) {
+	// Fungsi GetAllDocs digunakan untuk mengambil semua dokumen dari collection database yang memenuhi filter tertentu.
+
+	// Kontext background untuk operasi database
 	ctx := context.TODO()
 	collection := db.Collection(col)
 	cursor, err := collection.Find(ctx, filter)
