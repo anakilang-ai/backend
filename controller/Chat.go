@@ -48,6 +48,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 
 	// Looping untuk melakukan request ke Hugging Face API dengan mekanisme retry
 	for retryCount < maxRetries {
+		// Set header untuk Authorization dan Content-Type
 		response, err = client.R().
 			SetHeader("Authorization", apiToken).
 			SetHeader("Content-Type", "application/json").
