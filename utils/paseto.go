@@ -19,6 +19,7 @@ type Payload struct {
 	Nbf   time.Time          `json:"nbf"`
 }
 
+// membuat token dengan format JWT (JSON Web Token) yang berisi informasi pengguna (ID dan email), beserta pengaturan waktu kadaluarsa dan waktu mulai berlaku, menggunakan kunci privat yang diberikan.
 func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
