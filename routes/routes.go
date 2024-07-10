@@ -9,7 +9,6 @@ import (
 	"github.com/anakilang-ai/backend/modules"
 )
 
-// menangani request HTTP yang masuk ke server. Fungsi ini terlebih dahulu melakukan pengecekan kontrol akses dan koneksi database.
 func URL(w http.ResponseWriter, r *http.Request) {
 	if modules.SetAccessControlHeaders(w, r) {
 		return // If it's a preflight request, return early.
