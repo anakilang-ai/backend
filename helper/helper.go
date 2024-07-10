@@ -1,5 +1,6 @@
 package helper
 
+//mengimpor beberapa package yang dibutuhkan untuk program Go.
 import (
 	"encoding/json"
 	"log"
