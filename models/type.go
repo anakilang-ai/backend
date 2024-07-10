@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// merepresentasikan data pengguna yang akan disimpan di database MongoDB dan diekspos melalui JSON.
 type User struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	NamaLengkap     string             `bson:"namalengkap,omitempty" json:"namalengkap,omitempty"`
