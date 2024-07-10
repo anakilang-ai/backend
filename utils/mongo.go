@@ -63,11 +63,14 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 	if err != nil {
 		return
 	}
+	// Tutup cursor setelah selesai digunakan (defer)
 	defer cursor.Close(ctx)
+	// Decode semua dokumen ke dalam slice dengan tipe data generik T
 	err = cursor.All(context.TODO(), &docs)
 	if err != nil {
 		return
 	}
+	// Kembalikan slice berisi dokumen dan error (jika ada)
 	return
 }
 
