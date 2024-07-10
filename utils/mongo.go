@@ -13,13 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// menyimpan informasi koneksi database, yaitu string koneksi (DBString) dan nama database (DBName).
 type DBInfo struct {
 	DBString string
 	DBName   string
 }
 
-// Fungsi MongoConnect digunakan untuk menghubungkan ke database MongoDB dan mengembalikan objek database.
 func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mconn.DBString))
 	if err != nil {
@@ -28,7 +26,6 @@ func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	return client.Database(mconn.DBName), nil
 }
 
-// memasukkan satu dokumen baru ke dalam koleksi tertentu pada database MongoDB.
 func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive.ObjectID, err error) {
 	result, err := db.Collection(col).InsertOne(context.Background(), doc)
 	if err != nil {
@@ -37,7 +34,6 @@ func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-// mencari dan mengembalikan informasi pengguna dari database MongoDB berdasarkan email, dan memberikan pesan kesalahan yang sesuai jika pengguna tidak ditemukan atau terjadi kesalahan server.
 func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"email": email}
