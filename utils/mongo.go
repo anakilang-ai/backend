@@ -28,6 +28,7 @@ func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	return client.Database(mconn.DBName), nil
 }
 
+// memasukkan satu dokumen baru ke dalam koleksi tertentu pada database MongoDB.
 func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive.ObjectID, err error) {
 	result, err := db.Collection(col).InsertOne(context.Background(), doc)
 	if err != nil {
