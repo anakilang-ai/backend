@@ -56,7 +56,9 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 
 	// Kontext background untuk operasi database
 	ctx := context.TODO()
+	// Ambil collection dari database
 	collection := db.Collection(col)
+	// Find dokumen yang sesuai dengan filter
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
 		return
