@@ -62,6 +62,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 
 		// Cek status code response
 		if response.StatusCode() == http.StatusOK {
+			// Jika status code 200 (OK), break dari loop retry
 			break
 		} else {
 			var errorResponse map[string]interface{}
