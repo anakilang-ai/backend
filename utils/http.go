@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// mengirimkan respons HTTP dengan status kode tertentu dan pesan kesalahan dalam format JSON.
 func ErrorResponse(respw http.ResponseWriter, req *http.Request, statusCode int, err, msg string) {
 	resp := map[string]string{
 		"error":   err,
