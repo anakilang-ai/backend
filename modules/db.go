@@ -1,5 +1,6 @@
 package modules
 
+// digunakan untuk mengimpor package utils dari repository GitHub anakilang-ai/backend.
 import (
 	"github.com/anakilang-ai/backend/utils"
 )
