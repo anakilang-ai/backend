@@ -48,6 +48,7 @@ func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	return payload, err
 }
 
+// membuat pasangan kunci privat dan kunci publik yang digunakan dalam proses pembuatan dan verifikasi token JWT.  Kunci privat harus dijaga kerahasiaannya (jangan dibagikan), sedangkan kunci publik bisa dibagikan ke pihak lain yang membutuhkan untuk verifikasi token.
 func GenerateKey() (privateKey, publicKey string) {
 	secretKey := paseto.NewV4AsymmetricSecretKey() // don't share this!!!
 	publicKey = secretKey.Public().ExportHex()     // DO share this one
