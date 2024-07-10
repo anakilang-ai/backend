@@ -22,6 +22,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	// Decode request body ke dalam struct chat
 	err := json.NewDecoder(req.Body).Decode(&chat)
 	if err != nil {
+		// Jika terjadi error saat parsing request body, kembalikan Bad Request error
 		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
