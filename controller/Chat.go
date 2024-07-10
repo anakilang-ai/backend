@@ -97,6 +97,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 		return
 	}
 
+	// Proses data response
 	if len(data) > 0 {
 		generatedText, ok := data[0]["generated_text"].(string)
 		if !ok {
