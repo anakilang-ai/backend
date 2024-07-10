@@ -24,6 +24,7 @@ type Password struct {
 	Confirmpassword string `bson:"confirmpass,omitempty" json:"confirmpass,omitempty"`
 }
 
+// merepresentasikan data permintaan yang diajukan ke AI dalam program ini.
 type AIRequest struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	User      User               `bson:"user,omitempty" json:"user,omitempty"`
