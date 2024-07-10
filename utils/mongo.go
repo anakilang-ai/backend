@@ -37,6 +37,7 @@ func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
+// mencari dan mengembalikan informasi pengguna dari database MongoDB berdasarkan email, dan memberikan pesan kesalahan yang sesuai jika pengguna tidak ditemukan atau terjadi kesalahan server.
 func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"email": email}
