@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// menyimpan informasi koneksi database, yaitu string koneksi (DBString) dan nama database (DBName).
 type DBInfo struct {
 	DBString string
 	DBName   string
