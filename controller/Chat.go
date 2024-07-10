@@ -102,6 +102,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 		// Ekstrak generated text dari response
 		generatedText, ok := data[0]["generated_text"].(string)
 		if !ok {
+			// Jika gagal ekstrak generated text, kembalikan Internal Server Error
 			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error extracting generated text")
 			return
 		}
