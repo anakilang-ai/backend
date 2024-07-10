@@ -92,6 +92,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 
 	err = json.Unmarshal(response.Body(), &data)
 	if err != nil {
+		// Jika terjadi error saat parsing response body, kembalikan Internal Server Error
 		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error parsing response body "+err.Error())
 		return
 	}
