@@ -8,6 +8,7 @@ import (
 // mendefinisikan variabel MongoString dengan tipe data string dan menginisialisasi nilainya dengan hasil dari fungsi GetEnv yang memiliki parameter "MONGOSTRING".
 var MongoString string = GetEnv("MONGOSTRING")
 
+// mendefinisikan variabel mongoinfo dengan tipe data utils.DBInfo dan menginisialisasi nilainya dengan struktur utils.DBInfo
 var mongoinfo = utils.DBInfo{
 	DBString: MongoString,
 	DBName:   "ailang",
