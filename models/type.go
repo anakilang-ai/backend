@@ -47,6 +47,7 @@ type Credential struct {
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
+// merepresentasikan respon secara umum
 type Response struct {
 	Status  int    `json:"status" bson:"status"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
