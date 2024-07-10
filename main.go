@@ -1,6 +1,5 @@
 package ailang
 
-// memuat rute dari paket routes dan fungsi dari paket functions dalam sebuah proyek Go.
 import (
 	"github.com/anakilang-ai/backend/routes"
 
