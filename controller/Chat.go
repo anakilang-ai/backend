@@ -40,6 +40,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	apiUrl := modules.GetEnv("HUGGINGFACE_API_KEY")
 	apiToken := "Bearer " + tokenmodel
 
+	// Variable untuk menyimpan response dan error dari API
 	var response *resty.Response
 	var retryCount int
 	maxRetries := 5
