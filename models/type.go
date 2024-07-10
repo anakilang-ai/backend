@@ -40,6 +40,7 @@ type AIResponse struct {
 	CreatedAt time.Time          `bson:"created_at,omitempty" json:"created_at,omitempty"`
 }
 
+// menyimpan informasi terkait krediensial pengguna setelah proses login atau registrasi.
 type Credential struct {
 	Status  int    `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
