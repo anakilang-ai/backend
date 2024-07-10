@@ -1,5 +1,6 @@
 package utils
 
+// memuat paket encoding/json untuk encoding dan decoding JSON, paket log untuk logging, dan paket net/http untuk membuat aplikasi HTTP dalam proyek Go.
 import (
 	"encoding/json"
 	"log"
