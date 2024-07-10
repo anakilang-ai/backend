@@ -19,6 +19,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	// Definisikan variable chat untuk menyimpan data request
 	var chat models.AIRequest
 
+	// Decode request body ke dalam struct chat
 	err := json.NewDecoder(req.Body).Decode(&chat)
 	if err != nil {
 		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
