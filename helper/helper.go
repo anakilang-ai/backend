@@ -23,6 +23,7 @@ func WriteJSON(respw http.ResponseWriter, statusCode int, content any) {
 	respw.Write([]byte(Jsonstr(content)))
 }
 
+// mengencode data apapun (represented by strc parameter) ke format JSON string.
 func Jsonstr(strc any) string {
 	jsonData, err := json.Marshal(strc)
 	if err != nil {
