@@ -46,7 +46,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	maxRetries := 5
 	retryDelay := 20 * time.Second
 
-	// Request ke Hugging Face API
+	// Looping untuk melakukan request ke Hugging Face API dengan mekanisme retry
 	for retryCount < maxRetries {
 		response, err = client.R().
 			SetHeader("Authorization", apiToken).
