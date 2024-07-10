@@ -11,7 +11,7 @@ var Origins = []string{
 	"https://anakilang-ai.github.io/",
 }
 
-// Fungsi untuk memeriksa apakah origin diizinkan
+// mengecek apakah sebuah origin (biasanya URL asal request) diizinkan untuk mengakses resource.
 func isAllowedOrigin(origin string) bool {
 	for _, o := range Origins {
 		if o == origin {
