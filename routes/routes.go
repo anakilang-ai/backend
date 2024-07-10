@@ -1,6 +1,5 @@
 package routes
 
-//menunjukkan bahwa file tersebut kemungkinan besar berisi fungsi-fungsi yang terkait dengan web server dan penanganan request HTTP.
 import (
 	"net/http"
 
