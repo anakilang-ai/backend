@@ -1,11 +1,12 @@
 package routes
 
+//menunjukkan bahwa file tersebut kemungkinan besar berisi fungsi-fungsi yang terkait dengan web server dan penanganan request HTTP.
 import (
 	"net/http"
 
-	"github.com/anakilang-ai/backend/modules"
 	controller "github.com/anakilang-ai/backend/controller"
 	"github.com/anakilang-ai/backend/helper"
+	"github.com/anakilang-ai/backend/modules"
 )
 
 func URL(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if modules.ErrorMongoconn != nil {
-		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, " + modules.ErrorMongoconn.Error())
+		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, "+modules.ErrorMongoconn.Error())
 		return
 	}
 
@@ -36,7 +37,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 func Home(respw http.ResponseWriter, req *http.Request) {
 	resp := map[string]string{
 		"github_repo": "https://github.com/anakilang-ai/backend",
-		"message": "",
+		"message":     "",
 	}
 	helper.WriteJSON(respw, http.StatusOK, resp)
 }
