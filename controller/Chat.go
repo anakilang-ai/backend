@@ -65,6 +65,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 			// Jika status code 200 (OK), break dari loop retry
 			break
 		} else {
+			// Jika status code bukan 200, coba parsing error response
 			var errorResponse map[string]interface{}
 			err = json.Unmarshal(response.Body(), &errorResponse)
 			if err == nil && errorResponse["error"] == "Model is currently loading" {
