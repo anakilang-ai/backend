@@ -53,6 +53,7 @@ type Response struct {
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
+// merepresentasikan informasi yang akan disimpan di dalam token JWT (JSON Web Token) yang digunakan untuk otentikasi pengguna
 type Payload struct {
 	Id    primitive.ObjectID `json:"id"`
 	Email string             `json:"email"`
