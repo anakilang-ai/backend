@@ -14,4 +14,5 @@ var mongoinfo = utils.DBInfo{
 	DBName:   "ailang",
 }
 
+// membuat koneksi ke database MongoDB dan menyimpan hasil koneksi dalam variabel Mongoconn.
 var Mongoconn, ErrorMongoconn = utils.MongoConnect(mongoinfo)
