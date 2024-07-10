@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Daftar origins yang diizinkan
+// Mendaftar origins yang diizinkan
 var Origins = []string{
 	"http://localhost:8080",
 	"https://anakilang-ai.github.io/",
