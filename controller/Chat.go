@@ -14,6 +14,7 @@ import (
 )
 
 func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
+	// Fungsi Chat menangani request HTTP untuk chat dengan AI
 	var chat models.AIRequest
 
 	err := json.NewDecoder(req.Body).Decode(&chat)
