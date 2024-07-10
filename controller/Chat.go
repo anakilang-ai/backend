@@ -62,54 +62,42 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 
 		// Cek status code response
 		if response.StatusCode() == http.StatusOK {
-			// Jika status code 200 (OK), break dari loop retry
+
 			break
 		} else {
-			// Jika status code bukan 200, coba parsing error response
 			var errorResponse map[string]interface{}
 			err = json.Unmarshal(response.Body(), &errorResponse)
 			if err == nil && errorResponse["error"] == "Model is currently loading" {
-				// Jika error menunjukkan model sedang loading, lakukan retry
 				retryCount++
 				time.Sleep(retryDelay)
 				continue
 			}
-			// Jika error lain atau gagal parsing error response, kembalikan Internal Server Error
 			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API "+string(response.Body()))
 			return
 		}
 	}
 
-	// Cek status code response setelah loop retry
 	if response.StatusCode() != 200 {
-		// Jika status code tetap bukan 200 setelah retry, kembalikan Internal Server Error
 		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API "+string(response.Body()))
 		return
 	}
 
-	// Decode response body ke dalam slice map
 	var data []map[string]interface{}
 
 	err = json.Unmarshal(response.Body(), &data)
 	if err != nil {
-		// Jika terjadi error saat parsing response body, kembalikan Internal Server Error
 		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error parsing response body "+err.Error())
 		return
 	}
 
-	// Proses data response
 	if len(data) > 0 {
-		// Ekstrak generated text dari response
 		generatedText, ok := data[0]["generated_text"].(string)
 		if !ok {
-			// Jika gagal ekstrak generated text, kembalikan Internal Server Error
 			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error extracting generated text")
 			return
 		}
-		// Kirim response sukses dengan generated text
 		helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
 	} else {
-		// Jika tidak ada data response, kembalikan Internal Server Error
 		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: response")
 	}
 }
