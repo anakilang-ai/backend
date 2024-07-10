@@ -75,8 +75,11 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 }
 
 func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User, err error) {
+	// Fungsi GetUserFromID digunakan untuk mengambil data user berdasarkan ID (_id) dari database.
 	collection := db.Collection("users")
+	// Filter untuk mencari dokumen dengan _id tertentu
 	filter := bson.M{"_id": _id}
+	// Find one document yang sesuai dengan filter
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
