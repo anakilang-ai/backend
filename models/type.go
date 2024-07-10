@@ -40,20 +40,17 @@ type AIResponse struct {
 	CreatedAt time.Time          `bson:"created_at,omitempty" json:"created_at,omitempty"`
 }
 
-// menyimpan informasi terkait krediensial pengguna setelah proses login atau registrasi.
 type Credential struct {
 	Status  int    `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
-// merepresentasikan respon secara umum
 type Response struct {
 	Status  int    `json:"status" bson:"status"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 }
 
-// merepresentasikan informasi yang akan disimpan di dalam token JWT (JSON Web Token) yang digunakan untuk otentikasi pengguna
 type Payload struct {
 	Id    primitive.ObjectID `json:"id"`
 	Email string             `json:"email"`
