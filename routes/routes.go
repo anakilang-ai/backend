@@ -35,6 +35,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// menangani request HTTP GET pada path "/" dan mengembalikan respon berupa JSON yang berisi link repository project di Github dan pesan (masih kosong).
 func Home(respw http.ResponseWriter, req *http.Request) {
 	resp := map[string]string{
 		"github_repo": "https://github.com/anakilang-ai/backend",
