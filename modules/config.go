@@ -1,5 +1,6 @@
 package modules
 
+//mengimpor package os dari standard library Go.
 import (
 	"os"
 	// "github.com/joho/godotenv"
