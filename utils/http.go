@@ -23,6 +23,7 @@ func WriteJSON(respw http.ResponseWriter, statusCode int, content any) {
 	respw.Write([]byte(Jsonstr(content)))
 }
 
+// mengonversi struktur data apapun menjadi string JSON dan mengembalikannya, serta menghentikan eksekusi program jika terjadi kesalahan selama proses konversi.
 func Jsonstr(strc any) string {
 	jsonData, err := json.Marshal(strc)
 	if err != nil {
