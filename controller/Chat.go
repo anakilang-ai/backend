@@ -74,6 +74,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 				time.Sleep(retryDelay)
 				continue
 			}
+			// Jika error lain atau gagal parsing error response, kembalikan Internal Server Error
 			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API "+string(response.Body()))
 			return
 		}
