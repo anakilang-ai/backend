@@ -36,7 +36,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	// Inisialisasi client untuk request ke Hugging Face API
 	client := resty.New()
 
-	// Hugging Face API URL dan token
+	// Ambil Hugging Face API URL dan token dari environment variable
 	apiUrl := modules.GetEnv("HUGGINGFACE_API_KEY")
 	apiToken := "Bearer " + tokenmodel
 
