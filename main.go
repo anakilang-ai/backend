@@ -7,6 +7,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
+// menginisialisasi dan mendaftarkan handler HTTP bernama "WebHook" yang akan mengeksekusi fungsi routes.URL pada saat aplikasi dijalankan.
 func init() {
 	functions.HTTP("WebHook", routes.URL)
 }
