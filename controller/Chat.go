@@ -56,6 +56,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 			Post(apiUrl)
 
 		if err != nil {
+			// Jika terjadi error saat request, log error dan lanjutkan ke retry
 			log.Fatalf("Error making request: %v", err)
 		}
 
