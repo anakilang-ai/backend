@@ -1,6 +1,5 @@
 package utils
 
-//mengimpor beberapa library yang dibutuhkan untuk menjalankan fungsi-fungsi yang ada di file tersebut.
 import (
 	"encoding/json"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// merepresentasikan data yang akan disimpan dalam token, yang meliputi ID pengguna (berformat ObjectID dari MongoDB), email pengguna, waktu kadaluarsa token (exp), waktu penerbitan token (iat), dan waktu token mulai berlaku (nbf).
 type Payload struct {
 	Id    primitive.ObjectID `json:"id"`
 	Email string             `json:"email"`
