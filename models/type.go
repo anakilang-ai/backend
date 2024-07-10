@@ -17,6 +17,7 @@ type User struct {
 	Salt            string             `bson:"salt,omitempty" json:"salt,omitempty"`
 }
 
+// merepresentasikan data yang terkait dengan password pengguna,  bisa untuk update password atau saat registrasi, yang akan disimpan di database MongoDB dan diekspos melalui JSON.
 type Password struct {
 	Password        string `bson:"password,omitempty" json:"password,omitempty"`
 	Newpassword     string `bson:"newpass,omitempty" json:"newpass,omitempty"`
