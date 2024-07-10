@@ -1,13 +1,11 @@
 package helper
 
-//mengimpor beberapa package yang dibutuhkan untuk program Go.
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 )
 
-// mengirimkan response error ke client (browser atau aplikasi lain yang mengirimkan request)  dalam format JSON.
 func ErrorResponse(respw http.ResponseWriter, req *http.Request, statusCode int, err, msg string) {
 	resp := map[string]string{
 		"error":   err,
