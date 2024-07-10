@@ -69,6 +69,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 			var errorResponse map[string]interface{}
 			err = json.Unmarshal(response.Body(), &errorResponse)
 			if err == nil && errorResponse["error"] == "Model is currently loading" {
+				// Jika error menunjukkan model sedang loading, lakukan retry
 				retryCount++
 				time.Sleep(retryDelay)
 				continue
