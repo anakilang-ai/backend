@@ -21,7 +21,7 @@ func isAllowedOrigin(origin string) bool {
 	return false
 }
 
-// Fungsi untuk mengatur header CORS
+// mengatur header CORS
 func SetAccessControlHeaders(w http.ResponseWriter, r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 
