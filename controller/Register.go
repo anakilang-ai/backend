@@ -29,7 +29,7 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 		return
 	}
 	if err := checkmail.ValidateFormat(user.Email); err != nil {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid!")
 		return
 	}
 	userExists, _ := utils.GetUserFromEmail(user.Email, db)
