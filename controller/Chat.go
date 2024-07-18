@@ -1,91 +1,74 @@
 package controller
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
-	"log"
 	"net/http"
-	"time"
+	"strings"
 
-	"github.com/anakilang-ai/backend/helper"
-	"github.com/anakilang-ai/backend/models"
-	"github.com/anakilang-ai/backend/modules"
-	"github.com/go-resty/resty/v2"
+	model "github.com/anakilang-ai/backend/models"
+	"github.com/anakilang-ai/backend/utils"
+	"github.com/badoux/checkmail"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/argon2"
 )
 
-func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
-	var chat models.AIRequest
+func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
+	var user model.User
 
-	err := json.NewDecoder(req.Body).Decode(&chat)
+	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Error parsing request body: "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
 
-	if chat.Query == "" {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Please provide complete data")
+	if user.NamaLengkap == "" || user.Email == "" || user.Password == "" || user.Confirmpassword == "" {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
-
-	client := resty.New()
-
-	// Hugging Face API URL and token
-	apiUrl := modules.GetEnv("HUGGINGFACE_API_KEY")
-	apiToken := "Bearer " + tokenmodel
-
-	var response *resty.Response
-	var retryCount int
-	maxRetries := 5
-	retryDelay := 20 * time.Second
-
-	// Request to Hugging Face API
-	for retryCount < maxRetries {
-		response, err = client.R().
-			SetHeader("Authorization", apiToken).
-			SetHeader("Content-Type", "application/json").
-			SetBody(map[string]string{"inputs": chat.Query}).
-			Post(apiUrl)
-
-		if err != nil {
-			log.Printf("Error making request: %v", err)
-			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error making request: "+err.Error())
-			return
-		}
-
-		if response.StatusCode() == http.StatusOK {
-			break
-		} else {
-			var errorResponse map[string]interface{}
-			err = json.Unmarshal(response.Body(), &errorResponse)
-			if err == nil && errorResponse["error"] == "Model is currently loading" {
-				retryCount++
-				time.Sleep(retryDelay)
-				continue
-			}
-			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error from Hugging Face API: "+string(response.Body()))
-			return
-		}
-	}
-
-	if response.StatusCode() != http.StatusOK {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error from Hugging Face API: "+string(response.Body()))
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-
-	var data []map[string]interface{}
-	err = json.Unmarshal(response.Body(), &data)
+	userExists, _ := utils.GetUserFromEmail(user.Email, db)
+	if user.Email == userExists.Email {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
+		return
+	}
+	if strings.Contains(user.Password, " ") {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
+		return
+	}
+	if len(user.Password) < 8 {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
+		return
+	}
+	salt := make([]byte, 16)
+	_, err = rand.Read(salt)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error parsing response body: "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
 		return
 	}
-
-	if len(data) > 0 {
-		generatedText, ok := data[0]["generated_text"].(string)
-		if !ok {
-			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error extracting generated text")
-			return
-		}
-		helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
-	} else {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Server error: empty response")
+	hashedPassword := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
+	userData := bson.M{
+		"namalengkap": user.NamaLengkap,
+		"email":       user.Email,
+		"password":    hex.EncodeToString(hashedPassword),
+		"salt":        hex.EncodeToString(salt),
 	}
+	insertedID, err := utils.InsertOneDoc(db, col, userData)
+	if err != nil {
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
+		return
+	}
+	resp := map[string]any{
+		"message":    "berhasil mendaftar",
+		"insertedID": insertedID,
+		"data": map[string]string{
+			"email": user.Email,
+		},
+	}
+	utils.WriteJSON(respw, http.StatusCreated, resp)
 }
