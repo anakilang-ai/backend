@@ -17,18 +17,18 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 
 	err := json.NewDecoder(req.Body).Decode(&chat)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
+		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Error parsing request body: "+err.Error())
 		return
 	}
 
 	if chat.Query == "" {
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
+		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Please provide complete data")
 		return
 	}
 
 	client := resty.New()
 
-	// Hugging Face API URL dan token
+	// Hugging Face API URL and token
 	apiUrl := modules.GetEnv("HUGGINGFACE_API_KEY")
 	apiToken := "Bearer " + tokenmodel
 
@@ -37,16 +37,18 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	maxRetries := 5
 	retryDelay := 20 * time.Second
 
-	// Request ke Hugging Face API
+	// Request to Hugging Face API
 	for retryCount < maxRetries {
 		response, err = client.R().
 			SetHeader("Authorization", apiToken).
 			SetHeader("Content-Type", "application/json").
-			SetBody(`{"inputs": "` + chat.Query + `"}`).
+			SetBody(map[string]string{"inputs": chat.Query}).
 			Post(apiUrl)
 
 		if err != nil {
-			log.Fatalf("Error making request: %v", err)
+			log.Printf("Error making request: %v", err)
+			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error making request: "+err.Error())
+			return
 		}
 
 		if response.StatusCode() == http.StatusOK {
@@ -59,32 +61,31 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 				time.Sleep(retryDelay)
 				continue
 			}
-			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API "+string(response.Body()))
+			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error from Hugging Face API: "+string(response.Body()))
 			return
 		}
 	}
 
-	if response.StatusCode() != 200 {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API "+string(response.Body()))
+	if response.StatusCode() != http.StatusOK {
+		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error from Hugging Face API: "+string(response.Body()))
 		return
 	}
 
 	var data []map[string]interface{}
-
 	err = json.Unmarshal(response.Body(), &data)
 	if err != nil {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error parsing response body "+err.Error())
+		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error parsing response body: "+err.Error())
 		return
 	}
 
 	if len(data) > 0 {
 		generatedText, ok := data[0]["generated_text"].(string)
 		if !ok {
-			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error extracting generated text")
+			helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error extracting generated text")
 			return
 		}
 		helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
 	} else {
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: response")
+		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Server error: empty response")
 	}
 }
