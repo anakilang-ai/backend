@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// SignUp handles user registration
+// SignUp handles user registration2
 func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
 	var user model.User
 
