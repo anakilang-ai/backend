@@ -15,6 +15,6 @@ func main() {
 
 	// Menjalankan server dan menangani kesalahan jika terjadi
 	if err := http.ListenAndServe(port, nil); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		log.Fatalf("Server gagal untuk memulai: %v", err)
 	}
 }
