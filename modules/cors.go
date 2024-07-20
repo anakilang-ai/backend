@@ -5,14 +5,14 @@ import (
 )
 
 // Daftar origins yang diizinkan
-var Origins = []string{
+var allowedOrigins = []string{
 	"http://localhost:8080",
 	"https://anakilang-ai.github.io/",
 }
 
-// Fungsi untuk memeriksa apakah origin diizinkan
+// isAllowedOrigin memeriksa apakah origin diizinkan
 func isAllowedOrigin(origin string) bool {
-	for _, o := range Origins {
+	for _, o := range allowedOrigins {
 		if o == origin {
 			return true
 		}
@@ -20,26 +20,31 @@ func isAllowedOrigin(origin string) bool {
 	return false
 }
 
-// Fungsi untuk mengatur header CORS
-func SetAccessControlHeaders(w http.ResponseWriter, r *http.Request) bool {
+// SetAccessControlHeaders mengatur header CORS
+func SetAccessControlHeaders(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
 
 	if isAllowedOrigin(origin) {
-		// Set CORS headers for the preflight request
-		if r.Method == http.MethodOptions {
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Login")
-			w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT")
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Max-Age", "3600")
-			w.WriteHeader(http.StatusNoContent)
-			return true
-		}
-		// Set CORS headers for the main request.
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Login")
+		w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		return false
-	}
+		w.Header().Set("Access-Control-Max-Age", "3600")
 
-	return false
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+}
+
+// Middleware CORS untuk HTTP handler
+func CORSMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlHeaders(w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
