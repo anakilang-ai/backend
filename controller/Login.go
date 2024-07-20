@@ -12,61 +12,45 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// LogIn menangani proses login pengguna, termasuk validasi kredensial dan pembuatan token JWT
+// user
 func LogIn(db *mongo.Database, respw http.ResponseWriter, req *http.Request, privatekey string) {
 	var user model.User
-
-	// Mengurai body permintaan menjadi objek user
 	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Kesalahan dalam parsing body permintaan: "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
-
-	// Validasi email dan password
 	if user.Email == "" || user.Password == "" {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Mohon untuk melengkapi data")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
-
-	// Validasi format email
 	if err = checkmail.ValidateFormat(user.Email); err != nil {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Email tidak valid")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-
-	// Mendapatkan dokumen pengguna dari email
 	existsDoc, err := utils.GetUserFromEmail(user.Email, db)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Kesalahan server: gagal mendapatkan email: "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : get email "+err.Error())
 		return
 	}
-
-	// Dekode salt dari string heksadesimal
 	salt, err := hex.DecodeString(existsDoc.Salt)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Kesalahan server: gagal mendekode salt")
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
 		return
 	}
-
-	// Hash password menggunakan Argon2 dan salt yang diambil dari database
 	hash := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
 	if hex.EncodeToString(hash) != existsDoc.Password {
-		utils.ErrorResponse(respw, req, http.StatusUnauthorized, "Unauthorized", "Password salah")
+		utils.ErrorResponse(respw, req, http.StatusUnauthorized, "Unauthorized", "password salah")
 		return
 	}
-
-	// Membuat token JWT
-	tokenstring, err := utils.Encode(existsDoc.ID, user.Email, privatekey)
+	tokenstring, err := utils.Encode(user.ID, user.Email, privatekey)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Kesalahan server: gagal membuat token")
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : token")
 		return
 	}
-
-	// Mengirim respon sukses dengan token JWT
 	resp := map[string]string{
 		"status":  "success",
-		"message": "Login berhasil",
+		"message": "login berhasil",
 		"token":   tokenstring,
 	}
 	utils.WriteJSON(respw, http.StatusOK, resp)
