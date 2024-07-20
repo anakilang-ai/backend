@@ -32,7 +32,7 @@ func main() {
 	// Memuat variabel lingkungan dari file .env
 	modul.LoadEnv()
 
-	// Mengambil variabel lingkungan
+	// Mengambil variabel lingkungan dibawah ini:
 	nilai := modul.GetEnv("YOUR_ENV_VARIABLE")
 	fmt.Println("Nilai dari YOUR_ENV_VARIABLE:", nilai)
 }
