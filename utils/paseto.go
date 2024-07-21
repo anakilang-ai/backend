@@ -10,11 +10,11 @@ import (
 )
 
 type Payload struct {
-	Id    primitive.ObjectID `json:"id"`
-	Email string             `json:"email"`
-	Exp   time.Time          `json:"exp"`
-	Iat   time.Time          `json:"iat"`
-	Nbf   time.Time          `json:"nbf"`
+	Id    primitive.ObjectID json:"id"
+	Email string             json:"email"
+	Exp   time.Time          json:"exp"
+	Iat   time.Time          json:"iat"
+	Nbf   time.Time          json:"nbf"
 }
 
 func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
@@ -25,33 +25,28 @@ func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
 	token.Set("id", id)
 	token.SetString("email", email)
 	secretKey, err := paseto.NewV4AsymmetricSecretKeyFromHex(privateKey)
-	if err != nil {
-		return "", fmt.Errorf("failed to create secret key: %v", err)
-	}
-	return token.V4Sign(secretKey, nil), nil
+	return token.V4Sign(secretKey, nil), err
 }
 
 func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	var token *paseto.Token
-	pubKey, err := paseto.NewV4AsymmetricPublicKeyFromHex(publicKey)
+	var pubKey paseto.V4AsymmetricPublicKey
+	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKey) // this wil fail if given key in an invalid format
 	if err != nil {
-		return payload, fmt.Errorf("failed to create public key: %v", err)
+		return payload, fmt.Errorf("Decode NewV4AsymmetricPublicKeyFromHex : %v", err)
 	}
-	parser := paseto.NewParser()
-	token, err = parser.ParseV4Public(pubKey, tokenstring, nil)
+	parser := paseto.NewParser()                                // only used because this example token has expired, use NewParser() (which checks expiry by default)
+	token, err = parser.ParseV4Public(pubKey, tokenstring, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
 	if err != nil {
-		return payload, fmt.Errorf("failed to parse token: %v", err)
+		return payload, fmt.Errorf("Decode ParseV4Public : %v", err)
 	}
 	err = json.Unmarshal(token.ClaimsJSON(), &payload)
-	if err != nil {
-		return payload, fmt.Errorf("failed to unmarshal token claims: %v", err)
-	}
-	return payload, nil
+	return payload, err
 }
 
 func GenerateKey() (privateKey, publicKey string) {
-	secretKey := paseto.NewV4AsymmetricSecretKey()
-	publicKey = secretKey.Public().ExportHex()
+	secretKey := paseto.NewV4AsymmetricSecretKey() // don't share this!!!
+	publicKey = secretKey.Public().ExportHex()     // DO share this one
 	privateKey = secretKey.ExportHex()
 	return privateKey, publicKey
 }
