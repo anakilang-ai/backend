@@ -14,22 +14,16 @@ func ErrorResponse(respw http.ResponseWriter, req *http.Request, statusCode int,
 	WriteJSON(respw, statusCode, resp)
 }
 
-func WriteJSON(respw http.ResponseWriter, statusCode int, content interface{}) {
+func WriteJSON(respw http.ResponseWriter, statusCode int, content any) {
 	respw.Header().Set("Content-Type", "application/json")
 	respw.WriteHeader(statusCode)
-	jsonData, err := json.Marshal(content)
-	if err != nil {
-		log.Println("Error marshaling JSON:", err)
-		return
-	}
-	respw.Write(jsonData)
+	respw.Write([]byte(Jsonstr(content)))
 }
 
-func jsonStr(strc interface{}) string {
+func Jsonstr(strc any) string {
 	jsonData, err := json.Marshal(strc)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
-		return ""
+		log.Fatal(err)
 	}
 	return string(jsonData)
 }
