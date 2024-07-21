@@ -25,10 +25,10 @@ func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	return client.Database(mconn.DBName), nil
 }
 
-func InsertOneDoc(db *mongo.Database, col string, doc interface{}) (insertedID primitive.ObjectID, err error) {
-	result, err := db.Collection(col).InsertOne(context.TODO(), doc)
+func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive.ObjectID, err error) {
+	result, err := db.Collection(col).InsertOne(context.Background(), doc)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
 }
@@ -38,10 +38,10 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err er
 	filter := bson.M{"email": email}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if err == mongo.ErrNoDocuments {
 			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return doc, fmt.Errorf("kesalahan server: %s", err.Error())
+		return doc, fmt.Errorf("kesalahan server")
 	}
 	return doc, nil
 }
@@ -54,7 +54,7 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 		return
 	}
 	defer cursor.Close(ctx)
-	err = cursor.All(ctx, &docs)
+	err = cursor.All(context.TODO(), &docs)
 	if err != nil {
 		return
 	}
@@ -67,9 +67,9 @@ func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User,
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return doc, fmt.Errorf("no data found for ID %s", _id.Hex())
+			return doc, fmt.Errorf("no data found for ID %s", _id)
 		}
-		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id.Hex(), err.Error())
+		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
 	return doc, nil
 }
