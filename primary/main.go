@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -9,12 +10,17 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", routes.URL)
+	// Define the server port
 	port := ":8080"
+
+	// Register route handlers
+	http.HandleFunc("/", routes.URL)
+
+	// Start the server and log the URL where it's running
 	fmt.Printf("Server started at: http://localhost%s\n", port)
 
-	// Menjalankan server dan menangani kesalahan jika terjadi
+	// Start the HTTP server and handle any potential errors
 	if err := http.ListenAndServe(port, nil); err != nil {
-		log.Fatalf("Server gagal untuk memulai: %v", err)
+		log.Fatalf("Server failed to start: %v", err)
 	}
 }
