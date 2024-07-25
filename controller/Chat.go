@@ -1,154 +1,74 @@
-package main
+package controller
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
-	"log"
 	"net/http"
-	"time"
+	"strings"
 
-	"github.com/gorilla/mux"
+	model "github.com/anakilang-ai/backend/models"
+	"github.com/anakilang-ai/backend/utils"
+	"github.com/badoux/checkmail"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"golang.org/x/net/websocket"
+	"golang.org/x/crypto/argon2"
 )
 
-// Message represents a chat message
-type Message struct {
-	ID        string    `json:"id" bson:"_id,omitempty"`
-	Sender    string    `json:"sender"`
-	Content   string    `json:"content"`
-	Timestamp time.Time `json:"timestamp"`
-}
+func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
+	var user model.User
 
-// ChatRoom represents a chat room
-type ChatRoom struct {
-	ID       string    `json:"id" bson:"_id,omitempty"`
-	Name     string    `json:"name"`
-	Messages []Message `json:"messages"`
-}
-
-var (
-	dbClient *mongo.Client
-	dbName   = "chatdb"
-	colName  = "chatrooms"
-)
-
-// ConnectDB establishes a connection to the MongoDB database
-func ConnectDB() {
-	var err error
-	dbClient, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = dbClient.Connect(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = dbClient.Ping(nil, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Connected to MongoDB!")
-}
-
-// CreateChatRoom handles the creation of a new chat room
-func CreateChatRoom(w http.ResponseWriter, r *http.Request) {
-	var chatRoom ChatRoom
-	err := json.NewDecoder(r.Body).Decode(&chatRoom)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
 
-	collection := dbClient.Database(dbName).Collection(colName)
-	_, err = collection.InsertOne(r.Context(), chatRoom)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if user.NamaLengkap == "" || user.Email == "" || user.Password == "" || user.Confirmpassword == "" {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(chatRoom)
-}
-
-// GetChatRooms handles fetching all chat rooms
-func GetChatRooms(w http.ResponseWriter, r *http.Request) {
-	collection := dbClient.Database(dbName).Collection(colName)
-	cursor, err := collection.Find(r.Context(), bson.M{})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-	defer cursor.Close(r.Context())
-
-	var chatRooms []ChatRoom
-	err = cursor.All(r.Context(), &chatRooms)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	userExists, _ := utils.GetUserFromEmail(user.Email, db)
+	if user.Email == userExists.Email {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(chatRooms)
-}
-
-// SendMessage handles sending a message to a chat room
-func SendMessage(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	roomID := vars["roomID"]
-
-	var message Message
-	err := json.NewDecoder(r.Body).Decode(&message)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if strings.Contains(user.Password, " ") {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
 		return
 	}
-	message.Timestamp = time.Now()
-
-	collection := dbClient.Database(dbName).Collection(colName)
-	_, err = collection.UpdateOne(
-		r.Context(),
-		bson.M{"_id": roomID},
-		bson.M{"$push": bson.M{"messages": message}},
-	)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if len(user.Password) < 8 {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(message)
-}
-
-// WebSocketHandler handles websocket connections for real-time messaging
-func WebSocketHandler(ws *websocket.Conn) {
-	var message Message
-	for {
-		err := websocket.JSON.Receive(ws, &message)
-		if err != nil {
-			log.Println("WebSocket error:", err)
-			break
-		}
-
-		// Broadcast the message to all connected clients
-		websocket.JSON.Send(ws, message)
+	salt := make([]byte, 16)
+	_, err = rand.Read(salt)
+	if err != nil {
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
+		return
 	}
-}
-
-func main() {
-	ConnectDB()
-
-	r := mux.NewRouter()
-	r.HandleFunc("/chatrooms", CreateChatRoom).Methods("POST")
-	r.HandleFunc("/chatrooms", GetChatRooms).Methods("GET")
-	r.HandleFunc("/chatrooms/{roomID}/messages", SendMessage).Methods("POST")
-	r.Handle("/ws", websocket.Handler(WebSocketHandler))
-
-	log.Println("Server is running on port 8080")
-	http.ListenAndServe(":8080", r)
+	hashedPassword := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
+	userData := bson.M{
+		"namalengkap": user.NamaLengkap,
+		"email":       user.Email,
+		"password":    hex.EncodeToString(hashedPassword),
+		"salt":        hex.EncodeToString(salt),
+	}
+	insertedID, err := utils.InsertOneDoc(db, col, userData)
+	if err != nil {
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
+		return
+	}
+	resp := map[string]any{
+		"message":    "berhasil mendaftar",
+		"insertedID": insertedID,
+		"data": map[string]string{
+			"email": user.Email,
+		},
+	}
+	utils.WriteJSON(respw, http.StatusCreated, resp)
 }
