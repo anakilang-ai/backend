@@ -1,15 +1,41 @@
-package main
+package routes
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/anakilang-ai/backend/routes"
 )
 
-func main() {
-	http.HandleFunc("/", routes.URL)
-	port := ":8080"
-	fmt.Println("Server started at: http://localhost" + port)
-	http.ListenAndServe(port, nil)
+// URL handler
+func URL(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		handleGet(w, r)
+	case http.MethodPost:
+		handlePost(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func handleGet(w http.ResponseWriter, r *http.Request) {
+	response := map[string]string{"message": "Welcome to the API!"}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func handlePost(w http.ResponseWriter, r *http.Request) {
+	var requestData map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	response := map[string]interface{}{
+		"message": "Data received",
+		"data":    requestData,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
