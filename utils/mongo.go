@@ -12,11 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// DBInfo menyimpan informasi koneksi database
 type DBInfo struct {
 	DBString string
 	DBName   string
 }
 
+// MongoConnect menghubungkan ke database MongoDB
 func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mconn.DBString))
 	if err != nil {
@@ -25,6 +27,7 @@ func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	return client.Database(mconn.DBName), nil
 }
 
+// InsertOneDoc menyisipkan satu dokumen ke dalam koleksi
 func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive.ObjectID, err error) {
 	result, err := db.Collection(col).InsertOne(context.Background(), doc)
 	if err != nil {
@@ -33,6 +36,7 @@ func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
+// GetUserFromEmail mengambil pengguna dari email
 func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"email": email}
@@ -41,12 +45,13 @@ func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err er
 		if err == mongo.ErrNoDocuments {
 			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return doc, fmt.Errorf("kesalahan server")
+		return doc, fmt.Errorf("kesalahan server: %s", err.Error())
 	}
 	return doc, nil
 }
 
-func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, err error) {
+// GetAllDocs mengambil semua dokumen berdasarkan filter tertentu
+func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs []T, err error) {
 	ctx := context.TODO()
 	collection := db.Collection(col)
 	cursor, err := collection.Find(ctx, filter)
@@ -61,15 +66,16 @@ func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, e
 	return
 }
 
+// GetUserFromID mengambil pengguna dari ID
 func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"_id": _id}
 	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return doc, fmt.Errorf("no data found for ID %s", _id)
+			return doc, fmt.Errorf("tidak ada data untuk ID %s", _id)
 		}
-		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
+		return doc, fmt.Errorf("kesalahan saat mengambil data untuk ID %s: %s", _id, err.Error())
 	}
 	return doc, nil
 }
