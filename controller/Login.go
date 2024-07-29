@@ -15,40 +15,28 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// SignUp handles user registration
 func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
 	var user model.User
 
 	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body: "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
 
-	// Check for empty fields
 	if user.NamaLengkap == "" || user.Email == "" || user.Password == "" || user.Confirmpassword == "" {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
-
-	// Validate email format
 	if err := checkmail.ValidateFormat(user.Email); err != nil {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-
-	// Check if user already exists
-	existingUser, err := utils.GetUserFromEmail(user.Email, db)
-	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: error checking user existence, "+err.Error())
-		return
-	}
-	if existingUser.Email != "" {
+	userExists, _ := utils.GetUserFromEmail(user.Email, db)
+	if user.Email == userExists.Email {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
 		return
 	}
-
-	// Validate password
 	if strings.Contains(user.Password, " ") {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
 		return
@@ -57,35 +45,24 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
 		return
 	}
-	if user.Password != user.Confirmpassword {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password dan konfirmasi password tidak cocok")
-		return
-	}
-
-	// Generate salt and hash the password
 	salt := make([]byte, 16)
-	if _, err := rand.Read(salt); err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: error generating salt, "+err.Error())
+	_, err = rand.Read(salt)
+	if err != nil {
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
 		return
 	}
 	hashedPassword := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
-
-	// Prepare user data for insertion
 	userData := bson.M{
 		"namalengkap": user.NamaLengkap,
 		"email":       user.Email,
 		"password":    hex.EncodeToString(hashedPassword),
 		"salt":        hex.EncodeToString(salt),
 	}
-
-	// Insert user data into the database
 	insertedID, err := utils.InsertOneDoc(db, col, userData)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server: error inserting data, "+err.Error())
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
 		return
 	}
-
-	// Respond with success
 	resp := map[string]any{
 		"message":    "berhasil mendaftar",
 		"insertedID": insertedID,
