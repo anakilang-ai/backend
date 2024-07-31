@@ -2,11 +2,15 @@ package modules
 
 import (
 	"os"
-	// "github.com/joho/godotenv"
+	"log"
 )
 
+// GetEnv retrieves the value of the environment variable named by envName.
+// It returns an empty string if the environment variable is not set.
 func GetEnv(envName string) string {
-	// envFile, _ := godotenv.Read("../.env")
-	// return envFile[envName]
-	return os.Getenv(envName)
+	value := os.Getenv(envName)
+	if value == "" {
+		log.Printf("Warning: Environment variable %s is not set.", envName)
+	}
+	return value
 }
