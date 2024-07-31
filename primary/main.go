@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
+	// Menangani route utama
 	http.HandleFunc("/", routes.URL)
+
+	// Menentukan port server
 	port := ":8080"
 	fmt.Printf("Server started at: http://localhost%s\n", port)
 
