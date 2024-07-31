@@ -9,28 +9,28 @@ import (
 )
 
 func main() {
-    conn, err := net.Dial("tcp", "localhost:8081")
+    koneksi, err := net.Dial("tcp", "localhost:8081")
     if err != nil {
-        fmt.Println("Error connecting to server:", err)
+        fmt.Println("Kesalahan saat menghubungkan ke server:", err)
         os.Exit(1)
     }
-    defer conn.Close()
+    defer koneksi.Close()
 
-    fmt.Println("Connected to server")
+    fmt.Println("Terhubung ke server")
     go func() {
         for {
-            message, _ := bufio.NewReader(conn).ReadString('\n')
-            fmt.Print("Message from server:", string(message))
+            pesan, _ := bufio.NewReader(koneksi).ReadString('\n')
+            fmt.Print("Pesan dari server:", string(pesan))
         }
     }()
 
     for {
-        reader := bufio.NewReader(os.Stdin)
-        fmt.Print("Enter message: ")
-        message, _ := reader.ReadString('\n')
-        fmt.Fprintf(conn, message+"\n")
-        if strings.TrimSpace(message) == "EXIT" {
-            fmt.Println("Closing connection")
+        pembaca := bufio.NewReader(os.Stdin)
+        fmt.Print("Masukkan pesan: ")
+        pesan, _ := pembaca.ReadString('\n')
+        fmt.Fprintf(koneksi, pesan+"\n")
+        if strings.TrimSpace(pesan) == "KELUAR" {
+            fmt.Println("Menutup koneksi")
             return
         }
     }
