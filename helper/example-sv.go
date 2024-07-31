@@ -34,9 +34,6 @@ func main() {
     
     fmt.Println("Server berjalan di localhost:8081")
     for {
-        koneksi, err := pendengar.Accept()
-        if err != nil {
-            fmt.Println("Kesalahan saat menerima koneksi:", err)
             continue
         }
         go tanganiKoneksi(koneksi)
