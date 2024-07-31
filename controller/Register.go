@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	model "github.com/anakilang-ai/backend/models"
-	"github.com/anakilang-ai/backend/utils"
 	"github.com/badoux/checkmail"
+	"github.com/anakilang-ai/backend/utils"
+	model "github.com/anakilang-ai/backend/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/argon2"
@@ -29,7 +29,7 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 		return
 	}
 	if err := checkmail.ValidateFormat(user.Email); err != nil {
-		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid!")
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
 	userExists, _ := utils.GetUserFromEmail(user.Email, db)
