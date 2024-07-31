@@ -27,9 +27,6 @@ func main() {
     for {
         pembaca := bufio.NewReader(os.Stdin)
         fmt.Print("Masukkan pesan: ")
-        pesan, _ := pembaca.ReadString('\n')
-        fmt.Fprintf(koneksi, pesan+"\n")
-        if strings.TrimSpace(pesan) == "KELUAR" {
             fmt.Println("Menutup koneksi")
             return
         }
