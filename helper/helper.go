@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// ErrorResponse sends a JSON response with an error message and status code.
 func ErrorResponse(respw http.ResponseWriter, req *http.Request, statusCode int, err, msg string) {
 	resp := map[string]string{
 		"error":   err,
@@ -14,16 +15,17 @@ func ErrorResponse(respw http.ResponseWriter, req *http.Request, statusCode int,
 	WriteJSON(respw, statusCode, resp)
 }
 
+// WriteJSON writes a JSON response with the given status code and content.
 func WriteJSON(respw http.ResponseWriter, statusCode int, content any) {
 	respw.Header().Set("Content-Type", "application/json")
 	respw.WriteHeader(statusCode)
-	respw.Write([]byte(Jsonstr(content)))
-}
 
-func Jsonstr(strc any) string {
-	jsonData, err := json.Marshal(strc)
+	// Convert content to JSON and handle potential errors
+	jsonData, err := json.Marshal(content)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error marshalling JSON: %v", err)
+		http.Error(respw, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
-	return string(jsonData)
+	respw.Write(jsonData)
 }
