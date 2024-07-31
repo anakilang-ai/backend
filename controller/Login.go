@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	model "github.com/anakilang-ai/backend/models"
 	"github.com/anakilang-ai/backend/utils"
@@ -12,46 +15,60 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-func Login(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
-	var loginData model.Login
+func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
+	var user model.User
 
-	err := json.NewDecoder(req.Body).Decode(&loginData)
+	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body "+err.Error())
 		return
 	}
 
-	if loginData.Email == "" || loginData.Password == "" {
+	if user.NamaLengkap == "" || user.Email == "" || user.Password == "" || user.Confirmpassword == "" {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
 		return
 	}
-	if err := checkmail.ValidateFormat(loginData.Email); err != nil {
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email tidak valid")
 		return
 	}
-
-	userExists, err := utils.GetUserFromEmail(loginData.Email, db)
+	userExists, _ := utils.GetUserFromEmail(user.Email, db)
+	if user.Email == userExists.Email {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "email sudah terdaftar")
+		return
+	}
+	if strings.Contains(user.Password, " ") {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password tidak boleh mengandung spasi")
+		return
+	}
+	if len(user.Password) < 8 {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
+		return
+	}
+	salt := make([]byte, 16)
+	_, err = rand.Read(salt)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusUnauthorized, "Unauthorized", "email atau password salah")
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : salt")
 		return
 	}
-
-	salt, err := hex.DecodeString(userExists.Salt)
+	hashedPassword := argon2.IDKey([]byte(user.Password), salt, 1, 64*1024, 4, 32)
+	userData := bson.M{
+		"namalengkap": user.NamaLengkap,
+		"email":       user.Email,
+		"password":    hex.EncodeToString(hashedPassword),
+		"salt":        hex.EncodeToString(salt),
+	}
+	insertedID, err := utils.InsertOneDoc(db, col, userData)
 	if err != nil {
-		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : decode salt")
+		utils.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : insert data, "+err.Error())
 		return
 	}
-	hashedPassword := argon2.IDKey([]byte(loginData.Password), salt, 1, 64*1024, 4, 32)
-	if hex.EncodeToString(hashedPassword) != userExists.Password {
-		utils.ErrorResponse(respw, req, http.StatusUnauthorized, "Unauthorized", "email atau password salah")
-		return
-	}
-
 	resp := map[string]any{
-		"message": "berhasil login",
+		"message":    "berhasil mendaftar",
+		"insertedID": insertedID,
 		"data": map[string]string{
-			"email": userExists.Email,
+			"email": user.Email,
 		},
 	}
-	utils.WriteJSON(respw, http.StatusOK, resp)
+	utils.WriteJSON(respw, http.StatusCreated, resp)
 }
