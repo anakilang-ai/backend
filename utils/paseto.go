@@ -10,11 +10,11 @@ import (
 )
 
 type Payload struct {
-	Id    primitive.ObjectID json:"id"
-	Email string             json:"email"
-	Exp   time.Time          json:"exp"
-	Iat   time.Time          json:"iat"
-	Nbf   time.Time          json:"nbf"
+	Id    primitive.ObjectID `json:"id"`
+	Email string             `json:"email"`
+	Exp   time.Time          `json:"exp"`
+	Iat   time.Time          `json:"iat"`
+	Nbf   time.Time          `json:"nbf"`
 }
 
 func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
@@ -39,7 +39,7 @@ func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
 	token, err = parser.ParseV4Public(pubKey, tokenstring, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
 	if err != nil {
 		return payload, fmt.Errorf("Decode ParseV4Public : %v", err)
-	}
+	} 
 	err = json.Unmarshal(token.ClaimsJSON(), &payload)
 	return payload, err
 }
