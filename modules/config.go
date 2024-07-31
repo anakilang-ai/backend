@@ -1,21 +1,12 @@
 package modules
 
 import (
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
-// Inisialisasi untuk membaca file .env
-func init() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatalf("Kesalahan saat memuat file .env: %v", err)
-	}
-}
-
-// Fungsi untuk mendapatkan nilai variabel lingkungan
 func GetEnv(envName string) string {
+	// envFile, _ := godotenv.Read("../.env")
+	// return envFile[envName]
 	return os.Getenv(envName)
 }
