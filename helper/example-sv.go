@@ -8,37 +8,37 @@ import (
     "strings"
 )
 
-func handleConnection(conn net.Conn) {
-    fmt.Println("Client connected:", conn.RemoteAddr().String())
-    defer conn.Close()
+func tanganiKoneksi(koneksi net.Conn) {
+    fmt.Println("Klien terhubung:", koneksi.RemoteAddr().String())
+    defer koneksi.Close()
     
     for {
-        message, _ := bufio.NewReader(conn).ReadString('\n')
-        if strings.TrimSpace(message) == "EXIT" {
-            fmt.Println("Client disconnected:", conn.RemoteAddr().String())
+        pesan, _ := bufio.NewReader(koneksi).ReadString('\n')
+        if strings.TrimSpace(pesan) == "KELUAR" {
+            fmt.Println("Klien terputus:", koneksi.RemoteAddr().String())
             return
         }
-        fmt.Print("Message received:", string(message))
-        conn.Write([]byte(message))
+        fmt.Print("Pesan diterima:", string(pesan))
+        koneksi.Write([]byte(pesan))
     }
 }
 
 func main() {
-    fmt.Println("Starting server...")
-    listener, err := net.Listen("tcp", "localhost:8081")
+    fmt.Println("Memulai server...")
+    pendengar, err := net.Listen("tcp", "localhost:8081")
     if err != nil {
-        fmt.Println("Error creating server:", err)
+        fmt.Println("Kesalahan saat membuat server:", err)
         os.Exit(1)
     }
-    defer listener.Close()
+    defer pendengar.Close()
     
-    fmt.Println("Server started on localhost:8081")
+    fmt.Println("Server berjalan di localhost:8081")
     for {
-        conn, err := listener.Accept()
+        koneksi, err := pendengar.Accept()
         if err != nil {
-            fmt.Println("Error accepting connection:", err)
+            fmt.Println("Kesalahan saat menerima koneksi:", err)
             continue
         }
-        go handleConnection(conn)
+        go tanganiKoneksi(koneksi)
     }
 }
