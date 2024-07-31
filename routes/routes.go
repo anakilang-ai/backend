@@ -1,15 +1,15 @@
-package main
+package routes
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/anakilang-ai/backend/routes"
 )
 
-func main() {
-	http.HandleFunc("/", routes.URL)
-	port := ":8080"
-	fmt.Println("Server started at: http://localhost" + port)
-	http.ListenAndServe(port, nil)
+// URL adalah handler untuk rute utama ("/")
+func URL(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		fmt.Fprintln(w, "Selamat datang di server!")
+	} else {
+		http.Error(w, "Method tidak diizinkan", http.StatusMethodNotAllowed)
+	}
 }
