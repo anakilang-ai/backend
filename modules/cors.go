@@ -5,15 +5,15 @@ import (
 )
 
 // Daftar origins yang diizinkan
-var Origins = []string{
+var AllowedOrigins = []string{
 	"http://localhost:8080",
 	"https://anakilang-ai.github.io/",
 }
 
 // Fungsi untuk memeriksa apakah origin diizinkan
 func isAllowedOrigin(origin string) bool {
-	for _, o := range Origins {
-		if o == origin {
+	for _, allowed := range AllowedOrigins {
+		if allowed == origin {
 			return true
 		}
 	}
@@ -24,18 +24,19 @@ func isAllowedOrigin(origin string) bool {
 func SetAccessControlHeaders(w http.ResponseWriter, r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 
+	// Periksa jika origin diizinkan
 	if isAllowedOrigin(origin) {
-		// Set CORS headers for the preflight request
+		// Set header untuk permintaan preflight
 		if r.Method == http.MethodOptions {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Login")
-			w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization") // Mengganti 'Login' dengan 'Authorization' untuk kepatuhan standar
+			w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS")
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Max-Age", "3600")
 			w.WriteHeader(http.StatusNoContent)
 			return true
 		}
-		// Set CORS headers for the main request.
+		// Set header untuk permintaan utama
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		return false
