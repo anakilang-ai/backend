@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
+func Register(db *mongo.Database, col string, respw http.ResponseWriter, req *http.Request) {
 	var user model.User
 
 	err := json.NewDecoder(req.Body).Decode(&user)
@@ -45,6 +45,11 @@ func SignUp(db *mongo.Database, col string, respw http.ResponseWriter, req *http
 		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password minimal 8 karakter")
 		return
 	}
+	if user.Password != user.Confirmpassword {
+		utils.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "password dan konfirmasi password tidak sama")
+		return
+	}
+
 	salt := make([]byte, 16)
 	_, err = rand.Read(salt)
 	if err != nil {
