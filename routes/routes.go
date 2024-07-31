@@ -1,15 +1,11 @@
-package main
+package routes
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/anakilang-ai/backend/routes"
 )
 
-func main() {
-	http.HandleFunc("/", routes.URL)
-	port := ":8080"
-	fmt.Println("Server started at: http://localhost" + port)
-	http.ListenAndServe(port, nil)
+// URL adalah handler untuk rute utama
+func URL(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Selamat datang di server Go!")
 }
