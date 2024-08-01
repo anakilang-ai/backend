@@ -1,16 +1,17 @@
 package main
 
 import (
+	"net/http"
+	"github.com/labstack/echo/v4"
 	"github.com/anakilang-ai/backend/routes"
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	app := fiber.New()
-	// Define a fiber handler for all requests
-	app.All("/*", adaptor.HTTPHandlerFunc(routes.URL))
-
+	e := echo.New()
+	e.GET("/", func(c echo.Context) error {
+		routes.URL(c.Response().Writer, c.Request())
+		return nil
+	})
 	port := ":8080"
-	app.Listen(port)
+	e.Logger.Fatal(e.Start(port))
 }
