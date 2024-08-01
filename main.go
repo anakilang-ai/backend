@@ -1,17 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"github.com/anakilang-ai/backend/routes"
+	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
 	app := fiber.New()
-	app.Get("/", func(c *fiber.Ctx) error {
-		return routes.URL(c)
-	})
+	// Define a fiber handler for all requests
+	app.All("/*", adaptor.HTTPHandlerFunc(routes.URL))
+
 	port := ":8080"
-	fmt.Println("Server started at: http://localhost" + port)
 	app.Listen(port)
 }
