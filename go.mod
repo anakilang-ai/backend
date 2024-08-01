@@ -6,7 +6,6 @@ require aidanwoods.dev/go-paseto v1.5.1
 
 require (
 	github.com/stretchr/testify v1.9.0 // indirect
-	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
