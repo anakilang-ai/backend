@@ -3,22 +3,23 @@ package routes
 import (
 	"net/http"
 
-	"github.com/anakilang-ai/backend/modules"
-	controller "github.com/anakilang-ai/backend/controller"
+	"github.com/anakilang-ai/backend/controller"
 	"github.com/anakilang-ai/backend/helper"
+	"github.com/anakilang-ai/backend/modules"
 )
 
+// URL is the main routing handler for all requests.
 func URL(w http.ResponseWriter, r *http.Request) {
 	if modules.SetAccessControlHeaders(w, r) {
-		return // If it's a preflight request, return early.
+		return // Return early if it's a preflight request.
 	}
 
 	if modules.ErrorMongoconn != nil {
-		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, " + modules.ErrorMongoconn.Error())
+		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, "+modules.ErrorMongoconn.Error())
 		return
 	}
 
-	var method, path string = r.Method, r.URL.Path
+	method, path := r.Method, r.URL.Path
 	switch {
 	case method == "GET" && path == "/":
 		Home(w, r)
@@ -33,10 +34,11 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Home(respw http.ResponseWriter, req *http.Request) {
+// Home handles the root route.
+func Home(w http.ResponseWriter, r *http.Request) {
 	resp := map[string]string{
 		"github_repo": "https://github.com/anakilang-ai/backend",
-		"message": "",
+		"message":     "Welcome to the API",
 	}
-	helper.WriteJSON(respw, http.StatusOK, resp)
+	helper.WriteJSON(w, http.StatusOK, resp)
 }
