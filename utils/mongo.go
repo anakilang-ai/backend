@@ -12,72 +12,64 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DBInfo contains the connection string and database name
 type DBInfo struct {
 	DBString string
 	DBName   string
 }
 
-// MongoConnect establishes a connection to the MongoDB database
-func MongoConnect(mconn DBInfo) (*mongo.Database, error) {
+func MongoConnect(mconn DBInfo) (db *mongo.Database, err error) {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mconn.DBString))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+		return nil, err
 	}
 	return client.Database(mconn.DBName), nil
 }
 
-// InsertOneDoc inserts a document into the specified collection and returns the inserted ID
-func InsertOneDoc(db *mongo.Database, col string, doc any) (primitive.ObjectID, error) {
+func InsertOneDoc(db *mongo.Database, col string, doc any) (insertedID primitive.ObjectID, err error) {
 	result, err := db.Collection(col).InsertOne(context.Background(), doc)
 	if err != nil {
-		return primitive.NilObjectID, fmt.Errorf("failed to insert document: %w", err)
+		return
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-// GetUserFromEmail retrieves a user document from the "users" collection by email
-func GetUserFromEmail(email string, db *mongo.Database) (models.User, error) {
-	var user models.User
+func GetUserFromEmail(email string, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
 	filter := bson.M{"email": email}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return user, fmt.Errorf("email not found")
+		if err == mongo.ErrNoDocuments {
+			return doc, fmt.Errorf("email tidak ditemukan")
 		}
-		return user, fmt.Errorf("server error: %w", err)
+		return doc, fmt.Errorf("kesalahan server")
 	}
-	return user, nil
+	return doc, nil
 }
 
-// GetAllDocs retrieves all documents matching the filter from the specified collection
-func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (T, error) {
-	var docs T
+func GetAllDocs[T any](db *mongo.Database, col string, filter bson.M) (docs T, err error) {
+	ctx := context.TODO()
 	collection := db.Collection(col)
-	cursor, err := collection.Find(context.TODO(), filter)
+	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
-		return docs, fmt.Errorf("failed to find documents: %w", err)
+		return
 	}
-	defer cursor.Close(context.TODO())
-	if err = cursor.All(context.TODO(), &docs); err != nil {
-		return docs, fmt.Errorf("failed to decode documents: %w", err)
+	defer cursor.Close(ctx)
+	err = cursor.All(context.TODO(), &docs)
+	if err != nil {
+		return
 	}
-	return docs, nil
+	return
 }
 
-// GetUserFromID retrieves a user document from the "users" collection by ID
-func GetUserFromID(id primitive.ObjectID, db *mongo.Database) (models.User, error) {
-	var user models.User
+func GetUserFromID(_id primitive.ObjectID, db *mongo.Database) (doc models.User, err error) {
 	collection := db.Collection("users")
-	filter := bson.M{"_id": id}
-	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+	filter := bson.M{"_id": _id}
+	err = collection.FindOne(context.TODO(), filter).Decode(&doc)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return user, fmt.Errorf("no data found for ID %s", id.Hex())
+			return doc, fmt.Errorf("no data found for ID %s", _id)
 		}
-		return user, fmt.Errorf("error retrieving data for ID %s: %w", id.Hex(), err)
+		return doc, fmt.Errorf("error retrieving data for ID %s: %s", _id, err.Error())
 	}
-	return user, nil
+	return doc, nil
 }
-S
