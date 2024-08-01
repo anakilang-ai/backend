@@ -15,19 +15,19 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if modules.ErrorMongoconn != nil {
-		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "kesalahan server : database, "+modules.ErrorMongoconn.Error())
+		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "database connection error: "+modules.ErrorMongoconn.Error())
 		return
 	}
 
 	method, path := r.Method, r.URL.Path
 	switch {
-	case method == "GET" && path == "/":
+	case method == http.MethodGet && path == "/":
 		Home(w, r)
-	case method == "POST" && path == "/signup":
+	case method == http.MethodPost && path == "/signup":
 		controller.SignUp(modules.Mongoconn, "users", w, r)
-	case method == "POST" && path == "/login":
+	case method == http.MethodPost && path == "/login":
 		controller.LogIn(modules.Mongoconn, w, r, modules.GetEnv("PASETOPRIVATEKEY"))
-	case method == "POST" && path == "/chat":
+	case method == http.MethodPost && path == "/chat":
 		controller.Chat(w, r, modules.GetEnv("TOKENMODEL"))
 	default:
 		helper.ErrorResponse(w, r, http.StatusNotFound, "Not Found", "The requested resource was not found")
