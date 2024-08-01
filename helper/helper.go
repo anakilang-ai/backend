@@ -8,14 +8,15 @@ import (
 
 // ErrorResponse sends a JSON error response with the specified status code, error, and message.
 func ErrorResponse(w http.ResponseWriter, r *http.Request, statusCode int, err, msg string) {
-	resp := map[string]string{
+	response := map[string]string{
 		"error":   err,
 		"message": msg,
 	}
-	WriteJSON(w, statusCode, resp)
+	WriteJSON(w, statusCode, response)
 }
 
 // WriteJSON sends a JSON response with the specified status code and content.
+// It handles errors in JSON marshalling gracefully and logs the error.
 func WriteJSON(w http.ResponseWriter, statusCode int, content any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -30,6 +31,7 @@ func WriteJSON(w http.ResponseWriter, statusCode int, content any) {
 }
 
 // JSONString converts a Go struct or value to its JSON string representation.
+// It handles errors gracefully by logging and returning an empty string.
 func JSONString(data any) string {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
