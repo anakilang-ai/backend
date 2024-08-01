@@ -2,13 +2,14 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/anakilang-ai/backend/helper"
 	"github.com/anakilang-ai/backend/models"
 	"github.com/anakilang-ai/backend/modules"
+	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,6 +22,7 @@ func init() {
 	log.SetLevel(logrus.InfoLevel)
 }
 
+// Chat handles the chat request to the Hugging Face API.
 func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	var chat models.AIRequest
 
@@ -39,8 +41,6 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	}
 
 	client := resty.New()
-
-	// Hugging Face API URL and token
 	apiUrl := modules.GetEnv("HUGGINGFACE_API_URL")
 	apiToken := "Bearer " + tokenmodel
 
@@ -62,7 +62,6 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 			break
 		}
 
-		// Check if the error is due to model loading
 		if isModelLoading(response.Body()) {
 			log.Info("Model is currently loading, retrying...")
 			time.Sleep(retryDelay)
@@ -90,6 +89,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
 }
 
+// makeRequest sends a POST request to the Hugging Face API.
 func makeRequest(client *resty.Client, url, token, prompt string) (*resty.Response, error) {
 	return client.R().
 		SetHeader("Authorization", token).
@@ -98,6 +98,7 @@ func makeRequest(client *resty.Client, url, token, prompt string) (*resty.Respon
 		Post(url)
 }
 
+// isModelLoading checks if the error response indicates that the model is loading.
 func isModelLoading(body []byte) bool {
 	var errorResponse map[string]interface{}
 	if err := json.Unmarshal(body, &errorResponse); err == nil {
@@ -108,6 +109,7 @@ func isModelLoading(body []byte) bool {
 	return false
 }
 
+// extractGeneratedText extracts the generated text from the API response.
 func extractGeneratedText(body []byte) (string, error) {
 	var data []map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
