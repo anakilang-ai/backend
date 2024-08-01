@@ -45,6 +45,7 @@ require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.8.1
 	github.com/badoux/checkmail v1.2.4
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/fiber/v2 v2.52.5
