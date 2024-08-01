@@ -22,21 +22,21 @@ func init() {
 	log.SetLevel(logrus.InfoLevel)
 }
 
-// Chat handles the AI chat requests
+// Chat handles AI chat requests and interacts with Hugging Face API
 func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	var chat models.AIRequest
 
 	// Decode the request body into the chat struct
 	if err := json.NewDecoder(req.Body).Decode(&chat); err != nil {
 		log.WithError(err).Error("Failed to parse request body")
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "error parsing request body: "+err.Error())
+		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Error parsing request body: "+err.Error())
 		return
 	}
 
 	// Validate the chat prompt
 	if chat.Prompt == "" {
 		log.Warn("Empty prompt in request")
-		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "mohon untuk melengkapi data")
+		helper.ErrorResponse(respw, req, http.StatusBadRequest, "Bad Request", "Prompt cannot be empty")
 		return
 	}
 
@@ -50,7 +50,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	response, err := makeRequestWithRetry(client, apiUrl, apiToken, chat.Prompt)
 	if err != nil {
 		log.WithError(err).Error("Failed to get a valid response from Hugging Face API")
-		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "error from Hugging Face API: "+err.Error())
+		helper.ErrorResponse(respw, req, http.StatusInternalServerError, "Internal Server Error", "Error from Hugging Face API: "+err.Error())
 		return
 	}
 
@@ -64,7 +64,7 @@ func Chat(respw http.ResponseWriter, req *http.Request, tokenmodel string) {
 	helper.WriteJSON(respw, http.StatusOK, map[string]string{"answer": generatedText})
 }
 
-// makeRequestWithRetry handles the API request with retry mechanism
+// makeRequestWithRetry performs a request with retry logic in case of model loading
 func makeRequestWithRetry(client *resty.Client, url, token, prompt string) (*resty.Response, error) {
 	var response *resty.Response
 	var err error
@@ -79,19 +79,14 @@ func makeRequestWithRetry(client *resty.Client, url, token, prompt string) (*res
 
 		if err != nil {
 			log.WithError(err).Error("Request failed")
-		}
-
-		if response != nil && isModelLoading(response.Body()) {
+		} else if isModelLoading(response.Body()) {
 			log.Info("Model is currently loading, retrying...")
 			time.Sleep(retryDelay)
 			continue
-		}
-
-		if response != nil {
+		} else {
 			log.WithField("status_code", response.StatusCode()).Error("Error from Hugging Face API")
+			return response, errors.New("error from Hugging Face API: " + string(response.Body()))
 		}
-
-		return response, errors.New("failed to get a valid response")
 	}
 
 	return nil, errors.New("maximum retries reached")
@@ -106,7 +101,7 @@ func makeRequest(client *resty.Client, url, token, prompt string) (*resty.Respon
 		Post(url)
 }
 
-// isModelLoading checks if the model is loading based on the response body
+// isModelLoading checks if the response indicates that the model is loading
 func isModelLoading(body []byte) bool {
 	var errorResponse map[string]interface{}
 	if err := json.Unmarshal(body, &errorResponse); err == nil {
