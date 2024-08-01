@@ -9,56 +9,43 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Payload represents the structure of the PASETO token payload.
 type Payload struct {
-	Id    primitive.ObjectID `json:"id"`
-	Email string             `json:"email"`
-	Exp   time.Time          `json:"exp"`
-	Iat   time.Time          `json:"iat"`
-	Nbf   time.Time          `json:"nbf"`
+	Id    primitive.ObjectID json:"id"
+	Email string             json:"email"
+	Exp   time.Time          json:"exp"
+	Iat   time.Time          json:"iat"
+	Nbf   time.Time          json:"nbf"
 }
 
-// Encode creates a PASETO token with the given payload and private key.
 func Encode(id primitive.ObjectID, email, privateKey string) (string, error) {
 	token := paseto.NewToken()
-	now := time.Now()
-	token.SetIssuedAt(now)
-	token.SetNotBefore(now)
-	token.SetExpiration(now.Add(2 * time.Hour))
-	token.Set("id", id.Hex())
+	token.SetIssuedAt(time.Now())
+	token.SetNotBefore(time.Now())
+	token.SetExpiration(time.Now().Add(2 * time.Hour))
+	token.Set("id", id)
 	token.SetString("email", email)
 	secretKey, err := paseto.NewV4AsymmetricSecretKeyFromHex(privateKey)
-	if err != nil {
-		return "", fmt.Errorf("failed to create secret key from hex: %w", err)
-	}
-	return token.V4Sign(secretKey, nil), nil
+	return token.V4Sign(secretKey, nil), err
 }
 
-// Decode verifies and parses a PASETO token string using the provided public key.
-func Decode(publicKey string, tokenString string) (Payload, error) {
-	var payload Payload
-	pubKey, err := paseto.NewV4AsymmetricPublicKeyFromHex(publicKey)
+func Decode(publicKey string, tokenstring string) (payload Payload, err error) {
+	var token *paseto.Token
+	var pubKey paseto.V4AsymmetricPublicKey
+	pubKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKey) // this wil fail if given key in an invalid format
 	if err != nil {
-		return payload, fmt.Errorf("failed to create public key from hex: %w", err)
+		return payload, fmt.Errorf("Decode NewV4AsymmetricPublicKeyFromHex : %v", err)
 	}
-
-	parser := paseto.NewParser()
-	token, err := parser.ParseV4Public(pubKey, tokenString, nil)
+	parser := paseto.NewParser()                                // only used because this example token has expired, use NewParser() (which checks expiry by default)
+	token, err = parser.ParseV4Public(pubKey, tokenstring, nil) // this will fail if parsing failes, cryptographic checks fail, or validation rules fail
 	if err != nil {
-		return payload, fmt.Errorf("failed to parse token: %w", err)
-	}
-
+		return payload, fmt.Errorf("Decode ParseV4Public : %v", err)
+	} 
 	err = json.Unmarshal(token.ClaimsJSON(), &payload)
-	if err != nil {
-		return payload, fmt.Errorf("failed to unmarshal token claims: %w", err)
-	}
-
-	return payload, nil
+	return payload, err
 }
 
-// GenerateKey generates a new pair of PASETO private and public keys.
 func GenerateKey() (privateKey, publicKey string) {
-	secretKey := paseto.NewV4AsymmetricSecretKey() // Don't share this!!!
+	secretKey := paseto.NewV4AsymmetricSecretKey() // don't share this!!!
 	publicKey = secretKey.Public().ExportHex()     // DO share this one
 	privateKey = secretKey.ExportHex()
 	return privateKey, publicKey
