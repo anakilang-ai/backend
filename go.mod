@@ -5,7 +5,6 @@ go 1.22.5
 require aidanwoods.dev/go-paseto v1.5.1
 
 require (
-	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
