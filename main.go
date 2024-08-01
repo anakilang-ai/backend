@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/anakilang-ai/backend/routes"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		routes.URL(c.Writer, c.Request)
+	app := fiber.New()
+	app.Get("/", func(c *fiber.Ctx) error {
+		return routes.URL(c)
 	})
 	port := ":8080"
 	fmt.Println("Server started at: http://localhost" + port)
-	r.Run(port)
+	app.Listen(port)
 }
