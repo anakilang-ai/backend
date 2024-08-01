@@ -7,10 +7,24 @@ import (
 
 func main() {
 	e := echo.New()
+
 	e.GET("/", func(c echo.Context) error {
 		routes.URL(c.Response().Writer, c.Request())
 		return nil
 	})
+	e.POST("/", func(c echo.Context) error {
+		routes.URL(c.Response().Writer, c.Request())
+		return nil
+	})
+	e.PUT("/", func(c echo.Context) error {
+		routes.URL(c.Response().Writer, c.Request())
+		return nil
+	})
+	e.DELETE("/", func(c echo.Context) error {
+		routes.URL(c.Response().Writer, c.Request())
+		return nil
+	})
+
 	port := ":8080"
 	e.Logger.Fatal(e.Start(port))
 }
