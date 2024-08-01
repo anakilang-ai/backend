@@ -6,7 +6,6 @@ require aidanwoods.dev/go-paseto v1.5.1
 
 require (
 	github.com/stretchr/testify v1.9.0 // indirect
-	go.uber.org/zap v1.10.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
