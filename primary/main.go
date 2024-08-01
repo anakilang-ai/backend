@@ -16,6 +16,12 @@ import (
 // Logger instance
 var log = logrus.New()
 
+// Server configuration constants
+const (
+	defaultPort     = "8080"
+	shutdownTimeout = 5 * time.Second
+)
+
 func init() {
 	// Customize the logger if needed
 	log.SetFormatter(&logrus.JSONFormatter{})
@@ -23,44 +29,44 @@ func init() {
 }
 
 func main() {
-	// Create a new router
-	r := mux.NewRouter()
-	r.HandleFunc("/", routes.URL).Methods(http.MethodGet)
+	// Initialize router
+	router := mux.NewRouter()
+	router.HandleFunc("/", routes.URL).Methods(http.MethodGet)
 
-	// Determine the port from environment variables or default to 8080
+	// Load port from environment variable or use default
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = defaultPort
 	}
 
 	serverAddr := fmt.Sprintf(":%s", port)
 
-	// Create a server
-	srv := &http.Server{
+	// Initialize HTTP server
+	server := &http.Server{
 		Addr:    serverAddr,
-		Handler: r,
+		Handler: router,
 	}
 
-	// Start the server in a goroutine
+	// Start server in a separate goroutine
 	go func() {
-		fmt.Printf("Server started at: http://localhost%s\n", serverAddr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("ListenAndServe(): %v", err)
+		log.Infof("Server starting at: http://localhost%s", serverAddr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
 		}
 	}()
 
-	// Wait for an interrupt signal to gracefully shut down the server
+	// Wait for an interrupt signal to gracefully shut down
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 	<-sig
 
-	// Create a context with a timeout for shutting down
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Create a context with timeout for server shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	// Attempt to gracefully shut down the server
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server Shutdown Failed:%+v", err)
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v", err)
 	}
 
 	log.Info("Server exited gracefully")
