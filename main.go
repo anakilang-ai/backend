@@ -1,30 +1,27 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
+	"net/http"
+	"github.com/go-chi/chi/v5"
 	"github.com/anakilang-ai/backend/routes"
 )
 
 func main() {
-	e := echo.New()
+	r := chi.NewRouter()
 
-	e.GET("/", func(c echo.Context) error {
-		routes.URL(c.Response().Writer, c.Request())
-		return nil
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		routes.URL(w, r)
 	})
-	e.POST("/", func(c echo.Context) error {
-		routes.URL(c.Response().Writer, c.Request())
-		return nil
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		routes.URL(w, r)
 	})
-	e.PUT("/", func(c echo.Context) error {
-		routes.URL(c.Response().Writer, c.Request())
-		return nil
+	r.Put("/", func(w http.ResponseWriter, r *http.Request) {
+		routes.URL(w, r)
 	})
-	e.DELETE("/", func(c echo.Context) error {
-		routes.URL(c.Response().Writer, c.Request())
-		return nil
+	r.Delete("/", func(w http.ResponseWriter, r *http.Request) {
+		routes.URL(w, r)
 	})
 
 	port := ":8080"
-	e.Logger.Fatal(e.Start(port))
+	http.ListenAndServe(port, r)
 }
