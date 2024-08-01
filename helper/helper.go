@@ -20,6 +20,7 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request, statusCode int, err, 
 func WriteJSON(w http.ResponseWriter, statusCode int, content any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
+
 	jsonData, err := json.Marshal(content)
 	if err != nil {
 		// Log the error and send a generic error response
@@ -27,12 +28,17 @@ func WriteJSON(w http.ResponseWriter, statusCode int, content any) {
 		http.Error(w, `{"error":"Internal Server Error","message":"Failed to encode response"}`, http.StatusInternalServerError)
 		return
 	}
-	w.Write(jsonData)
+
+	_, err = w.Write(jsonData)
+	if err != nil {
+		// Log the error if writing to the response fails
+		log.Printf("Failed to write JSON response: %v", err)
+	}
 }
 
-// JSONString converts a Go struct or value to its JSON string representation.
+// MarshalJSON converts a Go struct or value to its JSON string representation.
 // It handles errors gracefully by logging and returning an empty string.
-func JSONString(data any) string {
+func MarshalJSON(data any) string {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		// Log the error and return an empty string
