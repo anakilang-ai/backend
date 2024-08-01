@@ -1,11 +1,18 @@
-package ailang
+package main
 
 import (
-	"github.com/anakilang-ai/backend/routes"
+	"fmt"
 
-	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+	"github.com/anakilang-ai/backend/routes"
+	"github.com/gin-gonic/gin"
 )
 
-func init() {
-	functions.HTTP("WebHook", routes.URL)
+func main() {
+	r := gin.Default()
+	r.GET("/", func(c *gin.Context) {
+		routes.URL(c.Writer, c.Request)
+	})
+	port := ":8080"
+	fmt.Println("Server started at: http://localhost" + port)
+	r.Run(port)
 }
