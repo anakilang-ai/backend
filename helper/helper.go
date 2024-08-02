@@ -2,9 +2,13 @@ package helper
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
+
+// Logger instance for structured logging
+var logger = logrus.New()
 
 // ErrorResponse sends a JSON error response with the specified status code, error, and message.
 func ErrorResponse(w http.ResponseWriter, r *http.Request, statusCode int, err, msg string) {
@@ -24,15 +28,14 @@ func WriteJSON(w http.ResponseWriter, statusCode int, content any) {
 	jsonData, err := json.Marshal(content)
 	if err != nil {
 		// Log the error and send a generic error response
-		log.Printf("Failed to marshal JSON response: %v", err)
+		logger.WithError(err).Error("Failed to marshal JSON response")
 		http.Error(w, `{"error":"Internal Server Error","message":"Failed to encode response"}`, http.StatusInternalServerError)
 		return
 	}
 
-	_, err = w.Write(jsonData)
-	if err != nil {
+	if _, err := w.Write(jsonData); err != nil {
 		// Log the error if writing to the response fails
-		log.Printf("Failed to write JSON response: %v", err)
+		logger.WithError(err).Error("Failed to write JSON response")
 	}
 }
 
@@ -42,7 +45,7 @@ func MarshalJSON(data any) string {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		// Log the error and return an empty string
-		log.Printf("Failed to marshal JSON: %v", err)
+		logger.WithError(err).Error("Failed to marshal JSON")
 		return ""
 	}
 	return string(jsonData)
