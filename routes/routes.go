@@ -10,18 +10,23 @@ import (
 
 // URL is the main routing handler for all requests.
 func URL(w http.ResponseWriter, r *http.Request) {
-	// Set CORS headers and return early if it's a preflight request.
+	// Set CORS headers and handle preflight requests.
 	if modules.SetAccessControlHeaders(w, r) {
 		return
 	}
 
-	// Check for MongoDB connection error.
+	// Handle MongoDB connection errors.
 	if modules.ErrorMongoconn != nil {
-		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "database connection error: "+modules.ErrorMongoconn.Error())
+		helper.ErrorResponse(w, r, http.StatusInternalServerError, "Internal Server Error", "Database connection error: "+modules.ErrorMongoconn.Error())
 		return
 	}
 
 	// Route based on HTTP method and URL path.
+	handleRequest(w, r)
+}
+
+// handleRequest routes requests to the appropriate controller function based on method and path.
+func handleRequest(w http.ResponseWriter, r *http.Request) {
 	method, path := r.Method, r.URL.Path
 	switch {
 	case method == http.MethodGet && path == "/":
