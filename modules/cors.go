@@ -25,20 +25,26 @@ func SetAccessControlHeaders(w http.ResponseWriter, r *http.Request) bool {
 	if isAllowedOrigin(origin) {
 		if r.Method == http.MethodOptions {
 			// Handle preflight request.
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Login")
-			w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT")
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Max-Age", "3600")
+			setCORSHeaders(w, origin, true)
 			w.WriteHeader(http.StatusNoContent)
 			return true
 		}
 		// Handle main request.
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		setCORSHeaders(w, origin, false)
 		return false
 	}
 
-	// If the origin is not allowed, don't set any CORS headers.
+	// If the origin is not allowed, no CORS headers are set.
 	return false
+}
+
+// Sets CORS headers for the response.
+func setCORSHeaders(w http.ResponseWriter, origin string, isPreflight bool) {
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Login")
+	if isPreflight {
+		w.Header().Set("Access-Control-Max-Age", "3600")
+	}
 }
