@@ -9,31 +9,31 @@ import (
 // User represents a user in the system
 type User struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Name            string             `bson:"namalengkap,omitempty" json:"namalengkap,omitempty"`
+	Name            string             `bson:"name,omitempty" json:"name,omitempty"`
 	Email           string             `bson:"email,omitempty" json:"email,omitempty"`
 	Password        string             `bson:"password,omitempty" json:"password,omitempty"`
-	ConfirmPassword string             `bson:"confirmpassword,omitempty" json:"confirmpassword,omitempty"`
+	ConfirmPassword string             `bson:"confirm_password,omitempty" json:"confirm_password,omitempty"`
 	Salt            string             `bson:"salt,omitempty" json:"salt,omitempty"`
 }
 
 // Password represents a password change request
 type Password struct {
-	CurrentPassword string `bson:"password,omitempty" json:"password,omitempty"`
-	NewPassword     string `bson:"newpass,omitempty" json:"newpassword,omitempty"`
-	ConfirmPassword string `bson:"confirmpass,omitempty" json:"confirmpassword,omitempty"`
+	CurrentPassword string `bson:"current_password,omitempty" json:"current_password,omitempty"`
+	NewPassword     string `bson:"new_password,omitempty" json:"new_password,omitempty"`
+	ConfirmPassword string `bson:"confirm_password,omitempty" json:"confirm_password,omitempty"`
 }
 
 // AIRequest represents a request to an AI service
 type AIRequest struct {
 	Prompt     string    `bson:"prompt,omitempty" json:"prompt,omitempty"`
-	AIResponse string    `bson:"airesp,omitempty" json:"airesp,omitempty"`
+	AIResponse string    `bson:"ai_response,omitempty" json:"ai_response,omitempty"`
 	CreatedAt  time.Time `bson:"created_at,omitempty" json:"created_at,omitempty"`
 }
 
 // AIResponse represents the response from an AI service
 type AIResponse struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	AIRequest AIRequest          `bson:"airequest,omitempty" json:"airequest,omitempty"`
+	AIRequest AIRequest          `bson:"ai_request,omitempty" json:"ai_request,omitempty"`
 	Response  string             `bson:"response,omitempty" json:"response,omitempty"`
 	CreatedAt time.Time          `bson:"created_at,omitempty" json:"created_at,omitempty"`
 }
